@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<package version="2.0" xmlns="http://pear.php.net/dtd/package-2.0"
+    xmlns:tasks="http://pear.php.net/dtd/tasks-1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0
+http://pear.php.net/dtd/tasks-1.0.xsd
+http://pear.php.net/dtd/package-2.0
+http://pear.php.net/dtd/package-2.0.xsd">
+	<name>##PEAR_NAME##</name>
+	<channel>pear.invenzzia.org</channel>
+	<summary>##PEAR_SUMMARY##</summary>
+	<description>##PEAR_DESCRIPTION##</description>
+
+	<lead>
+		<name>Tomasz Jędrzejewski</name>
+		<user>zyxist</user>
+		<email>nightstorm@tlen.pl</email>
+		<active>yes</active>
+	</lead>
+
+	<date>##RELEASE_DATE##</date>
+
+	<version>
+		<release>##PROJECT_VERSION##</release>
+		<api>##PROJECT_VERSION##</api>
+	</version>
+	<stability>
+		<release>##RELEASE_STABILITY##</release>
+		<api>##API_STABILITY##</api>
+	</stability>
+
+	<license uri="##LICENSE_URL##">##LICENSE_NAME##</license>
+
+	<notes>##PEAR_NOTES##</notes>
+
+	<contents>
+		<dir baseinstalldir="/" name="/">
+			<file baseinstalldir="/" name="/Opl/Template/Renderer/HttpRenderer.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Renderer/ReturnRenderer.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Renderer/RendererInterface.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Inflector/ExternalInflectorInterface.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Inflector/InflectorInterface.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Inflector/StandardInflector.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Exception/FilesystemException.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Exception/UnknownResourceException.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Exception/CompilationException.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Exception/ParserException.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Exception/ExpressionException.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Exception/ASTException.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Exception/MissingTemplateException.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Objects/PHPEmitterInterface.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Language/Declari/Expression/DeclariExpression.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Unit.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Context.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/CompiledUnit.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/Stage/ProcessingStage.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/Stage/StageInterface.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/Stage/AmbiguityStage.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/Parser/ParserInterface.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/Parser/XmlParser.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/CodeBufferCollection.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/NodePropertyManager.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/CompilerFactoryInterface.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/Linker/XmlLinker.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/Linker/LinkerInterface.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/PropertyCollection.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/Compiler.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/AST/Node.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/AST/Comment.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/AST/NamedElementInterface.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/AST/Text.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/AST/NamespacedElementInterface.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/AST/Attribute.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/AST/Scannable.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/AST/Cdata.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/AST/Element.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/AST/ASTIterator.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/AST/Expression.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/AST/Document.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/Expression/ExpressionInterface.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/Expression/StringExpression.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/Compiler/CompilerFactory.php" role="php" />
+			<file baseinstalldir="/" name="/Opl/Template/UnitFactoryInterface.php" role="php" />
+		</dir>
+	</contents>
+
+	<dependencies>
+		<required>
+			<php><min>5.3.0</min></php>
+			<pearinstaller><min>1.4.0</min></pearinstaller>
+		</required>
+	</dependencies>
+
+	<phprelease>
+	</phprelease>
+</package>

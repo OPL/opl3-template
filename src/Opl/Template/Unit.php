@@ -24,24 +24,52 @@ use Opl\Template\Inflector\InflectorInterface;
  */
 class Unit extends Context
 {
+	/**
+	 * The template name
+	 * @var string
+	 */
 	protected $templateName;
+	/**
+	 * The context with global data.
+	 * @var Opl\Template\Context
+	 */
 	protected $globalContext = null;
 
+	/**
+	 * Creates the new unit for the given template.
+	 * 
+	 * @param string $templateName The template name
+	 */
 	public function __construct($templateName)
 	{
 		$this->templateName = (string)$templateName;
 	} // end __construct();
 
+	/**
+	 * Returns the template name this unit is associated to.
+	 * @return string
+	 */
 	public function getTemplateName()
 	{
 		return $this->templateName;
 	} // end getTemplateName();
 
+	/**
+	 * Sets the global context that allows to share a common set of variables
+	 * between different units.
+	 * 
+	 * @param Context $globalContext The new global context.
+	 */
 	public function setGlobalContext(Context $globalContext)
 	{
 		$this->globalContext = $globalContext;
 	} // end setGlobalContext();
 
+	/**
+	 * Returns the current global context.
+	 * 
+	 * @return string 
+	 */
 	public function getGlobalContext()
 	{
 		return $this->globalContext;

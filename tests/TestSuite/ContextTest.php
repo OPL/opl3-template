@@ -26,6 +26,22 @@ class ContextTest extends \PHPUnit_Framework_TestCase
 		$this->assertSame(null, $context->getVar('joe'));
 	} // end testSettingAndGettingTemplateVariables();
 	
+	public function testMassVarSetting()
+	{
+		$context = new Context();
+		
+		$context->setVars(array(
+			'foo' => 'bar',
+			'joe' => 'goo',
+			'moo' => 'hoo'
+		));
+		$this->assertEquals('bar', $context->getVar('foo'));
+		$this->assertEquals('goo', $context->getVar('joe'));
+		$this->assertEquals('hoo', $context->getVar('moo'));
+		
+		$this->assertSame(null, $context->getVar('loo'));
+	} // end testMassVarSetting();
+	
 	public function testSettingAndGettingObjects()
 	{
 		$context = new Context();

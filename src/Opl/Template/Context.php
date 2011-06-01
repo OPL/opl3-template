@@ -29,6 +29,14 @@ class Context
 	{
 		$this->data[$name] = $value;
 	} // end setVar();
+	
+	public function setVars(array $vars)
+	{
+		foreach($vars as $name => $value)
+		{
+			$this->data[$name] = $value;
+		}
+	} // end setVars();
 
 	public function getVar($name)
 	{

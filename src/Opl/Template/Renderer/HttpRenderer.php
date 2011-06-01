@@ -86,11 +86,22 @@ class HttpRenderer implements RendererInterface, ExternalInflectorInterface
 		return $this->compilerFactory;
 	} // end getCompilerFactory();
 	
+	/**
+	 * Sets the template execution mode used by this renderer: <tt>EXECUTE_DEBUG</tt>,
+	 * <tt>EXECUTE_STANDARD</tt> and <tt>EXECUTE_PERFORMANCE</tt>.
+	 * 
+	 * @param int $executionMode The new execution mode.
+	 */
 	public function setExecutionMode($executionMode)
 	{
 		$this->executionMode = (int)$executionMode;
 	} // end setExecutionMode();
 	
+	/**
+	 * Returns the current template execution mode.
+	 * 
+	 * @return int 
+	 */
 	public function getExecutionMode()
 	{
 		return $this->executionMode;

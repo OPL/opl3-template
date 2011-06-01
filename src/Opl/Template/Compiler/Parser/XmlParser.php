@@ -125,6 +125,10 @@ class XmlParser implements ParserInterface
 					{
 						$optNode = new Element(null, $name[0]);
 					}
+					if($this->compiler->hasNamespaceURI($reader->namespaceURI))
+					{
+						$optNode->setURIIdentifier($this->compiler->getURIIdentifier($reader->namespaceURI));
+					}
 					// Parse element attributes, if you manage to get there
 					if($reader->moveToFirstAttribute())
 					{
@@ -146,6 +150,12 @@ class XmlParser implements ParserInterface
 								{
 									$optAttribute = new Attribute(null, $name[0]);
 								}
+								
+								if($this->compiler->hasNamespaceURI($reader->namespaceURI))
+								{
+									$optAttribute->setURIIdentifier($this->compiler->getURIIdentifier($reader->namespaceURI));
+								}
+								
 								$optAttribute->setValue($this->compileValue($reader->value));
 								$optNode->addAttribute($optAttribute);
 							}

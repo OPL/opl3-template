@@ -32,6 +32,22 @@ interface NamespacedElementInterface
 	 * @return The element namespace.
 	 */
 	public function getNamespace();
+	
+	/**
+	 * Sets the numerical identifier of the namespace URI this element
+	 * belongs to.
+	 * 
+	 * @param int $id
+	 */
+	public function setURIIdentifier($id);
+	
+	/**
+	 * Returns the numerical namespace URI identifier.
+	 * 
+	 * @return int
+	 */
+	public function getURIIdentifier();
+	
 	/**
 	 * Returns the fully qualified element name, with the prepended namespace.
 	 * The namespace should be separated from the name with a colon.

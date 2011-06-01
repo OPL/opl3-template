@@ -22,6 +22,7 @@ class Attribute implements NamedElementInterface, NamespacedElementInterface
 {
 	private $name;
 	private $namespace;
+	private $uriID;
 	private $value;
 	
 	/**
@@ -73,6 +74,22 @@ class Attribute implements NamedElementInterface, NamespacedElementInterface
 	{
 		return $this->namespace;
 	} // end getNamespace();
+	
+	/**
+	 * @see NamespacedElementInterface
+	 */
+	public function setURIIdentifier($id)
+	{
+		$this->uriID = (int) $id;
+	} // end setURIIdentifier();
+	
+	/**
+	 * @see NamespacedElementInterface
+	 */
+	public function getURIIdentifier()
+	{
+		return $this->uriID;
+	} // end getURIIdentifier();
 	
 	/**
 	 * @see NamespacedElementInterface

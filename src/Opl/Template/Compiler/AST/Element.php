@@ -24,6 +24,7 @@ class Element extends Scannable implements NamedElementInterface, NamespacedElem
 {
 	private $name;
 	private $namespace;
+	private $uriID;
 	private $attributes = array();
 	private $empty = false;
 	
@@ -76,6 +77,22 @@ class Element extends Scannable implements NamedElementInterface, NamespacedElem
 	{
 		return $this->namespace;
 	} // end getNamespace();
+	
+	/**
+	 * @see NamespacedElementInterface
+	 */
+	public function setURIIdentifier($id)
+	{
+		$this->uriID = (int) $id;
+	} // end setURIIdentifier();
+	
+	/**
+	 * @see NamespacedElementInterface
+	 */
+	public function getURIIdentifier()
+	{
+		return $this->uriID;
+	} // end getURIIdentifier();
 	
 	/**
 	 * @see NamespacedElementInterface

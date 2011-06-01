@@ -54,6 +54,18 @@ class Compiler
 	protected $linker;
 	
 	/**
+	 * The list of namespace URIs redirected to the instruction processors.
+	 * @var array
+	 */
+	protected $namespaceURI = array();
+	
+	/**
+	 * The reversed namespace URI mapper.
+	 * @var array 
+	 */
+	protected $reverseURIMapper = array();
+	
+	/**
 	 * The list of the expression engines available during the compilation.
 	 * @var array
 	 */
@@ -197,6 +209,52 @@ class Compiler
 	{
 		return isset($this->expressionEngines[(string)$name]);
 	} // end hasExpressionEngine();
+	
+	/**
+	 * Adds a new namespace URI that will be recognized as the template language
+	 * instructions. Note that namespaces do not have to be related to the XML
+	 * namespace concept.
+	 * 
+	 * @param string $uri The new namespace URI.
+	 */
+	public function addNamespaceURI($uri)
+	{
+		$uri = (string) $uri;
+		$i = sizeof($this->namespaceURI);
+		$this->namespaceURI[$i] = $uri;
+		$this->reverseURIMapper[$uri] = $i;
+	} // end addNamespaceURI();
+	
+	/**
+	 * Checks if the given URI is registered by the template language.
+	 * 
+	 * @param string $uri The URI to check
+	 * @return boolean
+	 */
+	public function hasNamespaceURI($uri)
+	{
+		return isset($this->reverseURIMapper[(string)$uri]);
+	} // end hasNamespaceURI();
+	
+	public function getNamespaceURI($id)
+	{
+		$id = (int) $id;
+		if(!isset($this->namespaceURI[$id]))
+		{
+			throw new UnknownResourceException('Unknown namespace URI identifier: \''.$id.'\'.');
+		}
+		return $this->namespaceURI[$id];
+	} // end getNamespaceURI();
+	
+	public function getURIIdentifier($uri)
+	{
+		$uri = (string) $uri;
+		if(!isset($this->reverseURIMapper[$uri]))
+		{
+			throw new UnknownResourceException('Unknown namespace URI: \''.$uri.'\'.');
+		}
+		return $this->reverseURIMapper[$uri];
+	} // end getURIIdentifier();
 
 	/**
 	 * Compiles the unit template and stores the result into the specified

@@ -37,6 +37,17 @@ class XmlParser implements ParserInterface
 {
 	const EXPRESSION_TAG = '/(\{([^\}]*)\})/msi';
 	
+	const ATTR_ID = 0;
+	const ATTR_EMPTY_ID = 1;
+	const ATTR_STRING = 2;
+	const ATTR_NUMBER = 3;
+	const ATTR_BOOLEAN = 4;
+	const ATTR_EXPRESSION = 5;
+	
+	const REQUIRED = 76;	// :)
+	const OPTIONAL = 34;
+
+	
 	/**
 	 * The compiler instance
 	 * @var Opl\Template\Compiler\Compiler 
@@ -336,4 +347,134 @@ class XmlParser implements ParserInterface
 		}
 		return $value;
 	} // end compileValue();
+	
+	/**
+	 * An API method that simplifies the attribute extraction in the instruction
+	 * processors. As an attribute definition, we provide an associative array,
+	 * where each position represents a single attribute and defines its properties:
+	 * 
+	 *  - is it obligatory?
+	 *  - how should it be interpreted?
+	 *  - what is the default value?
+	 * 
+	 * The extracted attribute values overwrite the definition array. In addition,
+	 * the __UNKNOWN__ special position allows to parse a variable number of
+	 * attributes which are returned.
+	 * 
+	 * @throws AttributeExtractionException
+	 * @throws CompilerApiException
+	 * @param Element $element The element to scan.
+	 * @param array &$definition The attribute definition.
+	 * @return array The list of extracted undefined attributes, if __UNKNOWN__ is defined.
+	 */
+	public function extractAttributes(Element $element, array &$definition)
+	{
+		$attributes = $element->getAttributes();
+		// Filter the special attributes
+		foreach($attributes as $name => $attribute)
+		{
+			if($attribute->getURIIdentifier() !== null)
+			{
+				unset($attributes[$name]);
+			}
+		}
+		
+		$output = array();
+		$unknown = array();
+		$unknownDef = null;
+		foreach($definition as $name => $def)
+		{
+			if($name == '__UNKNOWN__')
+			{
+				$unknownDef = $def;
+				continue;
+			}
+			// Check if the obligatory attributes are defined.
+			if(!isset($attributes[$name]))
+			{
+				if($def[0] == self::REQUIRED)
+				{
+					throw new AttributeExtractionException('Cannot find the required attribute \''.$name.'\' in the \''.$element->getFullyQualifiedName().'\' element.');
+				}
+				else
+				{
+					$output[$name] = $def[2];
+					unset($attributes[$name]);
+					continue;
+				}
+			}
+			// Parse the value.
+			$output[$name] = $this->processAttributeValue($element, $attributes[$name], $def);
+			unset($attributes[$name]);
+		}
+		
+		// If the unknown definition exists, process the remaining attributes, too.
+		if(!empty($unknownDef) && sizeof($attributes) > 0)
+		{
+			foreach($attributes as $name => $attribute)
+			{
+				$unknown[$name] = $this->processAttributeValue($element, $attribute, $unknownDef);
+			}
+		}
+		
+		$definition = $output;
+		return $unknown;		
+	} // end extractAttributes();
+	
+	/**
+	 * This method is used by <tt>XmlParser::extractAttributes()</tt> to process
+	 * a single attribute value. Returns the processed value.
+	 * 
+	 * @throws CompilerApiException
+	 * @throws AttributeExtractionException
+	 * @param Element $element The scanned element
+	 * @param Attribute $attribute The scanned attribute
+	 * @param array $definition The attribute definition
+	 * @return mixed
+	 */
+	protected function processAttributeValue(Element $element, Attribute $attribute, $definition, $value)
+	{
+		$value = $attribute->getValue();
+		switch($definition[1])
+		{
+			case self::ATTR_EMPTY_ID:
+				if(empty($value))
+				{
+					return '';
+				}
+			case self::ATTR_ID:
+				if(!preg_match('/^[a-zA-Z0-9\_\.]+$/', $value))
+				{
+					throw new AttributeExtractionException('The attribute \''.$name.'\' value in the \''.$element->getFullyQualifiedName().'\' must be a valid identifier.');
+				}
+				return $value;
+			case self::ATTR_STRING:
+				return $value;
+			case self::ATTR_NUMBER:
+				if(!preg_match('/^\-?([0-9]+\.?[0-9]*)|(0[xX][0-9a-fA-F]+)$/', $value))
+				{
+					throw new AttributeExtractionException('The attribute \''.$name.'\' value in the \''.$element->getFullyQualifiedName().'\' must be a valid number.');
+				}
+				return $value;
+			case self::ATTR_BOOLEAN:
+				if($value == 'yes' || $value == 'true')
+				{
+					return true;
+				}
+				elseif($value == 'no' || $value == 'false')
+				{
+					return false;
+				}
+				throw new AttributeExtractionException('The attribute \''.$name.'\' value in the \''.$element->getFullyQualifiedName().'\' must be \'yes\', \'no\', \'true\' or \'false\'.');
+			case self::ATTR_EXPRESSION:
+				if(strlen(trim($value)) == 0)
+				{
+					throw new AttributeExtractionException('The attribute \''.$name.'\' value in the \''.$element->getFullyQualifiedName().'\' cannot be empty.');
+				}
+				$detection = $this->detectExpressionType($value, (isset($definition[3]) ? $definition[3] : null));
+				return $this->compiler->getExpressionEngine($detection[0])->parse($detection[1]);
+			default:
+				throw new CompilerApiException('Unknown attribute type: '.$def[1].' in \''.$name.'\' attribute of \''.$element->getFullyQualifiedName().'\'.');
+		}
+	} // end processAttributeValue();
 } // end XmlParser;

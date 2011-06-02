@@ -450,7 +450,7 @@ class XmlParser implements ParserInterface
 	 * @param array $definition The attribute definition
 	 * @return mixed
 	 */
-	protected function processAttributeValue(Element $element, Attribute $attribute, $definition, $value)
+	protected function processAttributeValue(Element $element, Attribute $attribute, $definition)
 	{
 		$value = $attribute->getValue();
 		switch($definition[1])

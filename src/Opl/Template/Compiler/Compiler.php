@@ -400,6 +400,10 @@ class Compiler
 			$tree->dispose();
 			$compiledUnit->dispose();
 			$this->parser->dispose();
+			foreach($this->stages as $stage)
+			{
+				$stage->dispose();
+			}
 			foreach($this->instructions as $instruction)
 			{
 				$instruction->dispose();

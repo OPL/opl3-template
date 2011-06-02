@@ -11,6 +11,7 @@
  */
 namespace Opl\Template\Compiler;
 use Opl\Template\Compiler\Expression\ExpressionInterface;
+use Opl\Template\Compiler\Instruction\AbstractInstructionProcessor;
 use Opl\Template\Compiler\Linker\LinkerInterface;
 use Opl\Template\Compiler\Parser\ParserInterface;
 use Opl\Template\Compiler\Stage\StageInterface;
@@ -64,6 +65,12 @@ class Compiler
 	 * @var array 
 	 */
 	protected $reverseURIMapper = array();
+	
+	/**
+	 * The instructions registered in the compiler.
+	 * @var array 
+	 */
+	protected $instructions = array();
 	
 	/**
 	 * The list of the expression engines available during the compilation.
@@ -149,7 +156,7 @@ class Compiler
 	public function getStage($name)
 	{
 		$name = (string)$name;
-		if(!isset($this->epxressstagesionEngines[$name]))
+		if(!isset($this->stages[$name]))
 		{
 			throw new UnknownResourceException('Cannot find the \''.$name.'\' processing stage.');
 		}
@@ -255,6 +262,16 @@ class Compiler
 		}
 		return $this->reverseURIMapper[$uri];
 	} // end getURIIdentifier();
+	
+	/**
+	 * Registers a new instruction in the compiler.
+	 * 
+	 * @param AbstractInstructionProcessor $instruction 
+	 */
+	public function addInstruction(AbstractInstructionProcessor $instruction)
+	{
+		$this->instructions[] = $instruction;
+	} // end addInstruction();
 
 	/**
 	 * Compiles the unit template and stores the result into the specified
@@ -276,6 +293,11 @@ class Compiler
 			foreach($this->stages as $stage)
 			{
 				$stage->setCompiler($this);
+			}
+			foreach($this->instructions as $instruction)
+			{
+				$instruction->setCompiler($this);
+				$instruction->configure();
 			}
 			
 			$finalSnippet = null;
@@ -378,6 +400,10 @@ class Compiler
 			$tree->dispose();
 			$compiledUnit->dispose();
 			$this->parser->dispose();
+			foreach($this->instructions as $instruction)
+			{
+				$instruction->dispose();
+			}
 			$this->linker->dispose();
 		}
 		catch(CompilationException $exception)

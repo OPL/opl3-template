@@ -22,8 +22,11 @@ use Opl\Template\Compiler\AST\Text;
 use Opl\Template\Compiler\AST\Scannable;
 use Opl\Template\Compiler\Compiler;
 use Opl\Template\Compiler\Expression\ExpressionInterface;
+use Opl\Template\Compiler\Instruction\AbstractInstructionProcessor;
+use Opl\Template\Compiler\Instruction\ProcessingStageInterface;
 use Opl\Template\Compiler\PropertyCollection;
 use Opl\Template\Exception\LinkerException;
+use DomainException;
 use SplQueue;
 use SplStack;
 
@@ -66,6 +69,18 @@ class ProcessingStage implements StageInterface
 		'Opl\Template\Compiler\AST\Comment' => 'VisitComment',
 		'Opl\Template\Compiler\AST\Document' => 'VisitDocument'
 	);
+	
+	/**
+	 * The elements registered by the instruction processors.
+	 * @var array
+	 */
+	protected $registeredElements = array();
+	
+	/**
+	 * The attributes registered by the instruction processors.
+	 * @var array
+	 */
+	protected $registeredAttributes = array();
 	
 	/**
 	 * @see StageInterface
@@ -116,7 +131,7 @@ class ProcessingStage implements StageInterface
 		}
 		return $document;
 	} // end process();
-	
+
 	/**
 	 * @see StageInterface
 	 */
@@ -126,6 +141,72 @@ class ProcessingStage implements StageInterface
 		$this->codeBufferManager = null;
 		$this->nodePropertyManager = null;
 	} // end dispose();
+	
+	/**
+	 * Allows the instruction processor to register new elements within the given namespace
+	 * that will be redirected to it during the processing phase. The instruction processor
+	 * must implement the <tt>Opl\Template\Compiler\Instruction\ProcessingStageInterface</tt>
+	 * interface.
+	 * 
+	 * @throws DomainException If the processor does not implement the necessary interface.
+	 * @throws UnknownResourceException If the URI is not registered in the compiler.
+	 * @param AbstractInstructionProcessor $processor The processor that wants to register something.
+	 * @param string $namespaceUri The namespace URI, where the registered elements belong to.
+	 * @param array $elements The list of elements to register.
+	 * @return ProcessingStage Fluent interface.
+	 */
+	public function registerElements(AbstractInstructionProcessor $processor, $namespaceUri, array $elements)
+	{
+		if(!$processor instanceof ProcessingStageInterface)
+		{
+			throw new DomainException('Cannot register elements in the processing stage: the processor does not implement the ProcessingStageInterface.');
+		}
+		$uriId = $this->compiler->getURIIdentifier($namespaceUri);
+		
+		if(!isset($this->registeredElements[$uriId]))
+		{
+			$this->registeredElements[$uriId] = array();
+		}
+		foreach($elements as $element)
+		{
+			$element = (string)$element;
+			$this->registeredElements[$uriId][$element] = $processor;
+		}
+		return $this;
+	} // end registerElements();
+	
+	/**
+	 * Allows the instruction processor to register new attributes within the given namespace
+	 * that will be redirected to it during the processing phase. The instruction processor
+	 * must implement the <tt>Opl\Template\Compiler\Instruction\ProcessingStageInterface</tt>
+	 * interface.
+	 * 
+	 * @throws DomainException If the processor does not implement the necessary interface.
+	 * @throws UnknownResourceException If the URI is not registered in the compiler.
+	 * @param AbstractInstructionProcessor $processor The processor that wants to register something.
+	 * @param string $namespaceUri The namespace URI, where the registered attributes belong to.
+	 * @param array $elements The list of attributes to register.
+	 * @return ProcessingStage Fluent interface.
+	 */
+	public function registerAttributes(AbstractInstructionProcessor $processor, $namespaceUri, array $attributes)
+	{
+		if(!$processor instanceof ProcessingStageInterface)
+		{
+			throw new DomainException('Cannot register elements in the processing stage: the processor does not implement the ProcessingStageInterface.');
+		}
+		$uriId = $this->compiler->getURIIdentifier($namespaceURI);
+		
+		if(!isset($this->registeredAttributes[$uriId]))
+		{
+			$this->registeredAttributes[$uriId] = array();
+		}
+		foreach($elements as $element)
+		{
+			$element = (string)$element;
+			$this->registeredAttributes[$uriId][$element] = $processor;
+		}
+		return $this;
+	} // end registerAttributes();
 	
 	/**
 	 * This method delegates the execution to the method specializing in the
@@ -154,9 +235,17 @@ class ProcessingStage implements StageInterface
 	 */
 	protected function preVisitElement(Element $element)
 	{
-		if(false)
+		if(null !== ($id = $element->getURIIdentifier()))
 		{
-			// TODO: dynamic instruction recognition
+			// This element belongs to a special namespace.
+			$name = $element->getName();
+			if(isset($this->registeredElements[$id][$name]))
+			{
+				$processor = $this->registeredElements[$id][$name];
+				$processor->processRuntimeElement($element);
+				return $processor->getEnqueuedChildren();
+			}
+			return null;			
 		}
 		else
 		{
@@ -191,7 +280,7 @@ class ProcessingStage implements StageInterface
 	{
 		foreach($element->getAttributes() as $attribute)
 		{
-			if(false)
+			if(null !== ($id = $attribute->getURIIdentifier()))
 			{
 				// TODO: OPT instruction attribute recognition
 			}
@@ -220,7 +309,19 @@ class ProcessingStage implements StageInterface
 	 */
 	protected function postVisitElement(Element $element)
 	{
-
+		if(null !== ($id = $element->getURIIdentifier()))
+		{
+			$properties = $this->nodePropertyManager->getProperties($element);
+			if($properties->get('postprocess') == true)
+			{
+				$name = $element->getName();
+				if(isset($this->registeredElements[$id][$name]))
+				{
+					$processor = $this->registeredElements[$id][$name];
+					$processor->postProcessRuntimeElement($element);
+				}
+			}
+		}
 	} // end postVisitElement();
 	
 	/**

@@ -65,4 +65,55 @@ class UnitTest extends \PHPUnit_Framework_TestCase
 		$text = ob_get_clean();
 		$this->assertEquals('Just a dummy file.', $text);
 	} // end testDebugExecutionExecutesTheTemplateAndCompilesIt();
+	
+	/**
+	 * @expectedException Opl\Template\Exception\MissingTemplateException
+	 */
+	public function testDebugExecutionThrowsExceptionIfTemplateDoesNotExist()
+	{
+		$inflector = $this->getMock('Opl\Template\Inflector\InflectorInterface');
+		$inflector->expects($this->once())
+			->method('getSourcePath')
+			->with($this->equalTo('bar.tpl'))
+			->will($this->returnValue('./data/UnitTest/bar.tpl'));
+		$inflector->expects($this->once())
+			->method('getCompiledPath')
+			->with($this->equalTo('bar.tpl'), $this->equalTo(array()))
+			->will($this->returnValue('./data/UnitTest/bar.php'));
+
+		$compilerFactory = $this->getMock('Opl\Template\Compiler\CompilerFactoryInterface');
+		
+		$unit = new Unit('bar.tpl');
+		$unit->executeDebug($inflector, $compilerFactory);
+	} // end testDebugExecutionThrowsExceptionIfTemplateDoesNotExist();
+	
+	public function testPerformanceExecutionExecutesTheTemplate()
+	{
+		$inflector = $this->getMock('Opl\Template\Inflector\InflectorInterface');
+		$inflector->expects($this->once())
+			->method('getCompiledPath')
+			->with($this->equalTo('foo.tpl'), $this->equalTo(array()))
+			->will($this->returnValue('./data/UnitTest/foo.php'));
+		
+		$unit = new Unit('foo.tpl');
+		ob_start();
+		$unit->executePerformance($inflector);
+		$text = ob_get_clean();
+		$this->assertEquals('Just a dummy file.', $text);
+	} // end testPerformanceExecutionExecutesTheTemplate();
+	
+	/**
+	 * @expectedException Opl\Template\Exception\MissingTemplateException
+	 */
+	public function testPerformanceExecutionThrowsExceptionIfTemplateDoesNotExist()
+	{
+		$inflector = $this->getMock('Opl\Template\Inflector\InflectorInterface');
+		$inflector->expects($this->once())
+			->method('getCompiledPath')
+			->with($this->equalTo('bar.tpl'), $this->equalTo(array()))
+			->will($this->returnValue('./data/UnitTest/bar.php'));
+		
+		$unit = new Unit('bar.tpl');
+		$unit->executePerformance($inflector);
+	} // end testPerformanceExecutionThrowsExceptionIfTemplateDoesNotExist();
 } // end UnitTest;

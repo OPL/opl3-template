@@ -54,13 +54,29 @@ class XmlParser implements ParserInterface
 	 */
 	private $compiler;
 	
+	/**
+	 * The default expression type used, if the type is not explicitely specified.
+	 * @var string
+	 */
 	private $defaultExpressionType;
 	
+	/**
+	 * Sets the default expression type which is set for the expression, if it does
+	 * not specify it explicitely. Note that it does not check, whether the type
+	 * is actually registered in the compiler.
+	 * 
+	 * @param string $type The new type.
+	 */
 	public function setDefaultExpressionType($type)
 	{
 		$this->defaultExpressionType = (string) $type;
 	} // end setDefaultExpressionType();
 	
+	/**
+	 * Returns the current default expression type.
+	 * 
+	 * @return string 
+	 */
 	public function getDefaultExpressionType()
 	{
 		return $this->defaultExpressionType;

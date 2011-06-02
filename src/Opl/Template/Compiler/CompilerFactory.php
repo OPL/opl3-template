@@ -17,6 +17,7 @@ use Opl\Template\Compiler\Expression\StringExpression;
 use Opl\Template\Compiler\Stage\ProcessingStage;
 use Opl\Template\Compiler\Parser\XmlParser;
 use Opl\Template\Language\Declari\Expression\DeclariExpression;
+use Opl\Template\Language\Declari\Instruction\IfInstruction;
 
 class CompilerFactory implements CompilerFactoryInterface
 {
@@ -28,9 +29,11 @@ class CompilerFactory implements CompilerFactoryInterface
 		$compiler->addStage('process', new ProcessingStage());
 		
 		$parser->setDefaultExpressionType('parse');
-
+		
+		$compiler->addNamespaceURI('http://xml.invenzzia.org/declari');
 		$compiler->addExpressionEngine('parse', new DeclariExpression());
 		$compiler->addExpressionEngine('str', new StringExpression());
+		$compiler->addInstruction(new IfInstruction());
 		
 		return $compiler;
 	} // end getCompiler();

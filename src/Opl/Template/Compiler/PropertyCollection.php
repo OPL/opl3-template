@@ -61,6 +61,6 @@ class PropertyCollection
 	 */
 	public function dispose()
 	{
-		$this->buffers = null;
+		$this->properties = null;
 	} // end dispose();
 } // end PropertyCollection;

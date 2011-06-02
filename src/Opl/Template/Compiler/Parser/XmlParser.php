@@ -20,6 +20,8 @@ use Opl\Template\Compiler\AST\Node;
 use Opl\Template\Compiler\AST\Text;
 use Opl\Template\Compiler\AST\Scannable;
 use Opl\Template\Compiler\Compiler;
+use Opl\Template\Exception\AttributeExtractionException;
+use Opl\Template\Exception\CompilerApiException;
 use Opl\Template\Exception\ParserException;
 use RuntimeException;
 use XMLReader;

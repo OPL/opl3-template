@@ -14,6 +14,7 @@ class AllTests extends \PHPUnit_Framework_TestSuite
 	{
 		$suite = new AllTests('TestSuite\\Compiler');
 
+		$suite->addTestSuite('TestSuite\\Compiler\\CodeBufferCollectionTest');
 		$suite->addTestSuite('TestSuite\\Compiler\\PropertyCollectionTest');
 
 		return $suite;

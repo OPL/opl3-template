@@ -58,7 +58,7 @@ class CodeBufferCollectionTest extends \PHPUnit_Framework_TestCase
 		$this->assertFalse($collection2->hasContent(CodeBufferCollection::TAG_BEFORE));
 		
 		$collection2->copy($collection1, CodeBufferCollection::TAG_BEFORE, CodeBufferCollection::TAG_BEFORE);
-		$this->assertEquals('foo ', $collection2->getBuffer(CodeBufferCollection::TAG_BEFORE));
+		$this->assertEquals(' foo', $collection2->getBuffer(CodeBufferCollection::TAG_BEFORE));
 	} // end testCopyCopiesTheBufferContentBetweenCollections();
 	
 	public function testCopyMergesTheBuffers()
@@ -70,6 +70,6 @@ class CodeBufferCollectionTest extends \PHPUnit_Framework_TestCase
 		$collection2->append(CodeBufferCollection::TAG_BEFORE, 'bar');
 		
 		$collection2->copy($collection1, CodeBufferCollection::TAG_BEFORE, CodeBufferCollection::TAG_BEFORE);
-		$this->assertEquals('bar foo ', $collection2->getBuffer(CodeBufferCollection::TAG_BEFORE));
+		$this->assertEquals(' bar  foo', $collection2->getBuffer(CodeBufferCollection::TAG_BEFORE));
 	} // end testCopyCopiesTheBufferContentBetweenCollections();
 } // end CodeBufferCollectionTest;

@@ -97,9 +97,9 @@ class CodeBufferCollection
 	 */
 	public function copy(CodeBufferCollection $srcCollection, $srcBuffer, $destBuffer)
 	{
-		if(isset($this->buffers[$buffer]))
+		if(isset($this->buffers[$destBuffer]))
 		{
-			$this->buffers[$destBuffer] .= $srcCollection->getBuffer($srcBuffer);
+			$this->buffers[$destBuffer] .= ' '.$srcCollection->getBuffer($srcBuffer);
 		}
 		else
 		{

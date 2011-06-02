@@ -6,18 +6,15 @@
  * @copyright Copyright (c) 2009 Invenzzia Group
  * @license http://www.invenzzia.org/license/new-bsd New BSD License
  */
-namespace TestSuite\Compiler;
+namespace TestSuite\Compiler\Parser;
 
 class AllTests extends \PHPUnit_Framework_TestSuite
 {
 	public static function suite()
 	{
-		$suite = new AllTests('TestSuite\\Compiler');
+		$suite = new AllTests('TestSuite\\Compiler\\Parser');
 
-		$suite->addTestSuite('TestSuite\\Compiler\\Parser\\AllTests');
-		
-		$suite->addTestSuite('TestSuite\\Compiler\\CodeBufferCollectionTest');
-		$suite->addTestSuite('TestSuite\\Compiler\\PropertyCollectionTest');
+		$suite->addTestSuite('TestSuite\\Compiler\\Parser\\XmlParserTest');
 
 		return $suite;
 	} // end suite();

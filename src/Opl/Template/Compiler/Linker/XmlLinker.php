@@ -186,30 +186,50 @@ class XmlLinker implements LinkerInterface
 		$elementCodeBuffers = $this->codeBufferManager->getProperties($element);
 		$elementProperties = $this->nodePropertyManager->getProperties($element);
 		
-		if($elementCodeBuffers->hasContent(CodeBufferCollection::TAG_NAME))
+		if($element->getURIIdentifier() !== null)
 		{
-			$name = $elementCodeBuffers->link(array(CodeBufferCollection::TAG_NAME));
+			// Special namespace elements
+			if(!$element->hasChildren() && $element->isEmpty())
+			{
+				$this->output .= $elementCodeBuffers->link(array(CodeBufferCollection::TAG_BEFORE, CodeBufferCollection::TAG_SINGLE_BEFORE,
+					CodeBufferCollection::TAG_SINGLE_AFTER, CodeBufferCollection::TAG_AFTER));
+				return null;
+			}
+			else
+			{
+				$this->output .= $elementCodeBuffers->link(array(CodeBufferCollection::TAG_BEFORE, CodeBufferCollection::TAG_OPENING_BEFORE,
+					CodeBufferCollection::TAG_OPENING_AFTER, CodeBufferCollection::TAG_CONTENT_BEFORE));
+				return $this->enqueue($element);
+			}
 		}
 		else
 		{
-			$name = $element->getFullyQualifiedName();
-		}
-		
-		if(!$element->hasChildren() && $element->isEmpty())
-		{
-			$this->output .= $elementCodeBuffers->link(array(CodeBufferCollection::TAG_BEFORE, CodeBufferCollection::TAG_SINGLE_BEFORE));
-			$this->output .= '<'.$name.$this->linkAttributes($element, $elementCodeBuffers, $elementProperties).' />';
-			$this->output .= $elementCodeBuffers->link(array(CodeBufferCollection::TAG_SINGLE_AFTER, CodeBufferCollection::TAG_AFTER));
-			return null;
-		}
-		else
-		{
-			$this->output .= $elementCodeBuffers->link(array(CodeBufferCollection::TAG_BEFORE, CodeBufferCollection::TAG_OPENING_BEFORE));
-			$this->output .= '<'.$name.$this->linkAttributes($element, $elementCodeBuffers, $elementProperties).'>';
-			$this->output .= $elementCodeBuffers->link(array(CodeBufferCollection::TAG_OPENING_AFTER, CodeBufferCollection::TAG_CONTENT_BEFORE));
-			
-			$elementProperties->set('link:name', $name);
-			return $this->enqueue($element);
+			// Ordinary elements are rewritten
+			if($elementCodeBuffers->hasContent(CodeBufferCollection::TAG_NAME))
+			{
+				$name = $elementCodeBuffers->link(array(CodeBufferCollection::TAG_NAME));
+			}
+			else
+			{
+				$name = $element->getFullyQualifiedName();
+			}
+
+			if(!$element->hasChildren() && $element->isEmpty())
+			{
+				$this->output .= $elementCodeBuffers->link(array(CodeBufferCollection::TAG_BEFORE, CodeBufferCollection::TAG_SINGLE_BEFORE));
+				$this->output .= '<'.$name.$this->linkAttributes($element, $elementCodeBuffers, $elementProperties).' />';
+				$this->output .= $elementCodeBuffers->link(array(CodeBufferCollection::TAG_SINGLE_AFTER, CodeBufferCollection::TAG_AFTER));
+				return null;
+			}
+			else
+			{
+				$this->output .= $elementCodeBuffers->link(array(CodeBufferCollection::TAG_BEFORE, CodeBufferCollection::TAG_OPENING_BEFORE));
+				$this->output .= '<'.$name.$this->linkAttributes($element, $elementCodeBuffers, $elementProperties).'>';
+				$this->output .= $elementCodeBuffers->link(array(CodeBufferCollection::TAG_OPENING_AFTER, CodeBufferCollection::TAG_CONTENT_BEFORE));
+
+				$elementProperties->set('link:name', $name);
+				return $this->enqueue($element);
+			}
 		}
 	} // end preVisitElement();
 	
@@ -225,9 +245,17 @@ class XmlLinker implements LinkerInterface
 			$elementProperties = $this->nodePropertyManager->getProperties($element);
 			$elementCodeBuffers = $this->codeBufferManager->getProperties($element);
 			
-			$this->output .= $elementCodeBuffers->link(array(CodeBufferCollection::TAG_CONTENT_AFTER, CodeBufferCollection::TAG_CLOSING_BEFORE));
-			$this->output .= '</'.$elementProperties->get('link:name').'>';
-			$this->output .= $elementCodeBuffers->link(array(CodeBufferCollection::TAG_CLOSING_AFTER, CodeBufferCollection::TAG_AFTER));
+			if($element->getURIIdentifier() === null)
+			{
+				$this->output .= $elementCodeBuffers->link(array(CodeBufferCollection::TAG_CONTENT_AFTER, CodeBufferCollection::TAG_CLOSING_BEFORE));
+				$this->output .= '</'.$elementProperties->get('link:name').'>';
+				$this->output .= $elementCodeBuffers->link(array(CodeBufferCollection::TAG_CLOSING_AFTER, CodeBufferCollection::TAG_AFTER));
+			}
+			else
+			{
+				$this->output .= $elementCodeBuffers->link(array(CodeBufferCollection::TAG_CONTENT_AFTER, CodeBufferCollection::TAG_CLOSING_BEFORE,
+					CodeBufferCollection::TAG_CLOSING_AFTER, CodeBufferCollection::TAG_AFTER));
+			}
 		}
 	} // end postVisitElement();
 	

@@ -15,6 +15,7 @@ use Opl\Template\Compiler\AST\Element;
 use Opl\Template\Compiler\CodeBufferCollection;
 use Opl\Template\Compiler\Instruction\AbstractInstructionProcessor;
 use Opl\Template\Compiler\Instruction\ProcessingStageInterface;
+use Opl\Template\Compiler\Parser\XmlParser;
 
 class IfInstruction extends AbstractInstructionProcessor implements ProcessingStageInterface
 {
@@ -32,12 +33,14 @@ class IfInstruction extends AbstractInstructionProcessor implements ProcessingSt
 	 */
 	public function processRuntimeElement(Element $node)
 	{
-		$attr = $node->getAttribute('test');
-		list($bare, $expr, $type) = $this->compiler->getExpressionEngine('parse')->parse($attr->getValue());
+		$params = array(
+			'test' => array(XmlParser::REQUIRED, XmlParser::ATTR_EXPRESSION)
+		);
+		$this->compiler->getParser()->extractAttributes($node, $params);
 		
 		$codeBufferCollection = $this->compiler->getCompiledUnit()->getCodeBufferManager()->getProperties($node);
 		
-		$codeBufferCollection->prepend(CodeBufferCollection::TAG_BEFORE, ' if('.$bare.'){ ');
+		$codeBufferCollection->prepend(CodeBufferCollection::TAG_BEFORE, ' if('.$params['test'][0].'){ ');
 		$codeBufferCollection->append(CodeBufferCollection::TAG_AFTER, ' } ');
 		
 		$node->setVisible(true);

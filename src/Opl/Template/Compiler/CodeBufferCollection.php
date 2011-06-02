@@ -64,7 +64,7 @@ class CodeBufferCollection
 		{
 			$this->buffers[$buffer] = '';
 		}
-		$this->buffers[$buffer] .= ' '.(string)$code;
+		$this->buffers[$buffer] = ((string)$code).' '.$this->buffers[$buffer];
 		return $this;
 	} // end prepend();
 	
@@ -81,7 +81,7 @@ class CodeBufferCollection
 		{
 			$this->buffers[$buffer] = '';
 		}
-		$this->buffers[$buffer] = ((string)$code).' '.$this->buffers[$buffer];
+		$this->buffers[$buffer] .= ' '.(string)$code;		
 		return $this;
 	} // end append();
 

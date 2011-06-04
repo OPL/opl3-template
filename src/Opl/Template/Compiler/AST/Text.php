@@ -78,4 +78,9 @@ class Text extends Scannable
 			throw new ASTException('Invalid node type for the Text node: Cdata or Expression nodes allowed.');
 		}
 	} // end isChildTypeAllowed();
+	
+	public function __toString()
+	{
+		return 'TEXT';
+	} // end __toString();
 } // end Text;

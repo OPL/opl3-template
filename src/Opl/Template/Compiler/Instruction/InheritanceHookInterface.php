@@ -31,4 +31,14 @@ interface InheritanceHookInterface
 	 * @return array
 	 */
 	public function checkInheritance(Document $document);
+	
+	/**
+	 * Once the inheritance chain is completed, this method is called with the
+	 * name of the initial chain template. Note that it is NOT called for the
+	 * top-level chain, but only for the included sub-chains.
+	 * 
+	 * @param string $sourceName The name of the initial chain template
+	 * @param Document $document The final inheritance document.
+	 */
+	public function handleInheritance($sourceName, Document $document);
 } // end InheritanceHookInterface;

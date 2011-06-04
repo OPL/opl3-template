@@ -358,7 +358,7 @@ class Compiler
 			}
 			else
 			{
-				$tree = $this->executeInheritanceCompilation($sourceName, $compiledName, $inflector);
+				$tree = $this->executeComplexCompilation($sourceName, $compiledName, $inflector);
 			}
 
 			// Dependencies must be added to the tree.
@@ -426,109 +426,84 @@ class Compiler
 	 */
 	protected function executeComplexCompilation($sourceName, $compiledName, InflectorInterface $inflector)
 	{
-		$finalSnippet = null;
-
-		// The queued templates to be processed.
-		$executionQueue = new SplQueue;
-		$executionQueue->enqueue($sourceName);
-
-		// These templates requested another templates to
-		// be processed first, so they must be reexecuted
-		// later.
-		$restoreStack = new SplStack;
-
-		// The inheritance loop
-		/* Why do we check both the queue and the stack? It is simple. Take a look
-		 * at unit test Load/load_extend.txt. The opt:load may be requested by
-		 * an extending template. The stack processing is launched, when the queue
-		 * becomes empty. However, the last tree on the stack may be opt:extend which
-		 * wants to extend another template. We cannot forbid it do so, so we must
-		 * fill the queue again and the whole process repeats. So we must wait for
-		 * both the stack and the queue to be empty in order to go to the third
-		 * compilation stage.
-		 */
-		while($executionQueue->count() > 0 || $restoreStack->count() > 0)
+		$currentSourceName = $sourceName;
+		$levelSourceName = $sourceName;
+		$translate = true;
+		
+		// For incuding the templates.
+		$stack = new SplStack;
+		
+		while(null !== $currentSourceName)
 		{
-			while($executionQueue->count() > 0)
+			// The initial template has already been passed through an inflector.
+			if($translate)
 			{
-				$enqueuedSourceName = $executionQueue->dequeue();
-				if($enqueuedSourceName != $sourceName)
+				$translate = false;
+				$parsedFile = $currentSourceName;
+			}
+			else
+			{
+				$parsedFile = $inflector->getSourcePath($currentSourceName);
+			}
+			
+			// Add to the dependencies.
+			if($currentSourceName != $levelSourceName)
+			{
+				$compiledUnit->addDependency($parsedFile);
+			}
+
+			// The file must be parsed
+			$tree = $this->parser->parse($parsedFile);
+
+			// Check the compile-time inclusion and inheritance
+			list($extend, $includes) = $this->inheritanceHook->checkInheritance($tree);
+			
+			if(null !== $extend)
+			{
+				$currentSourceName = $extend;
+				$tree->dispose();
+				unset($tree);
+			}
+			else
+			{
+				// This queue is finished, restoring from the stack.
+				$currentSourceName = null;
+				if($stack->count() > 0)
 				{
-					$compiledUnit->addDependency($enqueuedSourceName);
-				}
-				// The file must be parsed
-				$tree = $this->parser->parse(
-					$enqueuedSourceName,
-					file_get_contents($enqueuedSourceName)
-				);
-				// The internal representation must be processeed.
-				foreach($this->stages as $stage)
-				{
-					$tree = $stage->process($tree);
-				}
-				// The template may have requested preprocessing another file first.
-			/*	if(null !== ($templates = $tree->get('preprocess')))
-				{
-					foreach($templates as $preprocessed)
+					$this->inheritanceHook->handleInheritance($levelSourceName, $tree);
+					list($currentSourceName, $levelSourceName, $tree) = $stack->pop();
+					if(null === $tree)
 					{
-						$executionQueue->enqueue($preprocessed);
+						continue;
 					}
-					$restoreStack->push($tree);
-					continue;
 				}
-				else
-				{
-					$this->context->setEscaping(null);
-				}
-			 */
-				list($tree, $finalSnippet) = $this->processPotentialTreeExtending($executionQueue, $tree);
 			}
-			while(($stackSize = $restoreStack->count()) > 0)
+			
+			if(is_array($includes) && ($size = sizeof($includes)) > 0)
 			{
-				$tree = $restoreStack->pop();
-				// Process it once more
-				foreach($this->stages as $stage)
+				$stack->push(array($currentSourceName, $levelSourceName, $tree));
+				$i = 1;
+				foreach($includes as $include)
 				{
-					$tree = $stage->process($stage);
-				}
-				$compiledUnit->setEscaping(null);
-
-				if($stackSize > 1)
-				{
-					$tree->dispose();
-					unset($tree);
-				}
-				else
-				{
-					list($tree, $finalSnippet) = $this->processPotentialTreeExtending($executionQueue, $tree);
+					if($i < $size)
+					{
+						$stack->push(array($include, $include, null));
+					}
+					else
+					{
+						$currentSourceName = $levelSourceName = $include;
+						continue 2;
+					}
+					$i++;
 				}
 			}
-		}
-		// If the snippet was requested, change it into a root node.
-		if(null !== $finalSnippet)
-		{
 
+			// The internal representation must be processeed.
+			foreach($this->stages as $stage)
+			{
+				$tree = $stage->process($tree);
+			}
 		}
+		return $tree;
 	} // end executeComplexCompilation();
-
-	protected function processPotentialTreeExtending(SplQueue $executionQueue, $tree)
-	{
-		$finalSnippet = null;
-		// The tree may request to be extended.
-/*		if(null !== ($extend = $tree->get('extend')))
-		{
-			$executionQueue->enqueue($extend);
-			$tree->dispose();
-			unset($tree);
-		}
-		// Or maybe the finishing tree will be a snippet?
-		elseif(null !== ($snippet = $tree->get('snippet')))
-		{
-			$tree->dispose();
-			unset($tree);
-			$finalSnippet = $snippet;
-		}
-*/
-		return array($tree, $finalSnippet);
-	} // end processPotentialTreeExtending();
 } // end Compiler;

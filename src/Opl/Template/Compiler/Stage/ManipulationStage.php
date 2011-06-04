@@ -23,9 +23,9 @@ use Opl\Template\Compiler\AST\Scannable;
 use Opl\Template\Compiler\Compiler;
 use Opl\Template\Compiler\Expression\ExpressionInterface;
 use Opl\Template\Compiler\Instruction\AbstractInstructionProcessor;
+use Opl\Template\Compiler\Instruction\ManipulationStageInterface;
 use Opl\Template\Compiler\Instruction\ProcessingStageInterface;
 use Opl\Template\Compiler\PropertyCollection;
-use Opl\Template\Exception\LinkerException;
 use DomainException;
 use SplQueue;
 use SplStack;
@@ -149,7 +149,7 @@ class ManipulationStage implements StageInterface
 	{
 		if(!$processor instanceof ManipulationStageInterface)
 		{
-			throw new DomainException('Cannot register elements in the processing stage: the processor does not implement the ManipulationStageInterface.');
+			throw new DomainException('Cannot register elements in the manipulation stage: the processor does not implement the ManipulationStageInterface.');
 		}
 		$uriId = $this->compiler->getURIIdentifier($namespaceUri);
 		
@@ -234,6 +234,18 @@ class ManipulationStage implements StageInterface
 				$processor = $this->registeredElements[$id][$name];
 				$processor->processManipulationElement($element);
 				return $processor->getEnqueuedChildren();
+			}
+			else
+			{
+				if($element->hasChildren())
+				{
+					$queue = new SplQueue();
+					foreach($element as $child)
+					{
+						$queue->enqueue($child);
+					}
+					return $queue;
+				}
 			}
 			return null;			
 		}

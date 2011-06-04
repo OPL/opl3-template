@@ -245,7 +245,21 @@ class ProcessingStage implements StageInterface
 				$processor->processRuntimeElement($element);
 				return $processor->getEnqueuedChildren();
 			}
-			return null;			
+			elseif($element->isVisible())
+			{
+				// If the element is already visible, it must have been marked
+				// in the previous stages and this is an intentional behaviour.
+				if($element->hasChildren())
+				{
+					$queue = new SplQueue();
+					foreach($element as $child)
+					{
+						$queue->enqueue($child);
+					}
+					return $queue;
+				}
+			}
+			return null;
 		}
 		else
 		{

@@ -37,7 +37,6 @@ class Compiler
 	 * @var CompiledUnit
 	 */
 	protected $compiledUnit;
-
 	/**
 	 * The parser used to build the AST.
 	 * @var ParserInterface
@@ -53,7 +52,6 @@ class Compiler
 	 * @var LinkerInterface
 	 */
 	protected $linker;
-	
 	/**
 	 * The list of namespace URIs redirected to the instruction processors.
 	 * @var array
@@ -84,6 +82,12 @@ class Compiler
 		return $this;
 	} // end setCompiledUnit();
 
+	/**
+	 * Returns the compiled unit which stores the compilation-specific
+	 * data.
+	 * 
+	 * @return CompiledUnit 
+	 */
 	public function getCompiledUnit()
 	{
 		return $this->compiledUnit;
@@ -243,6 +247,14 @@ class Compiler
 		return isset($this->reverseURIMapper[(string)$uri]);
 	} // end hasNamespaceURI();
 	
+	/**
+	 * Returns the namespace URI for the given numerical identifier. If the argument
+	 * is not a valid ID, an exception is thrown.
+	 * 
+	 * @throws UnknownResourceException
+	 * @param int $id The URI identifier
+	 * @return string
+	 */
 	public function getNamespaceURI($id)
 	{
 		$id = (int) $id;
@@ -253,6 +265,15 @@ class Compiler
 		return $this->namespaceURI[$id];
 	} // end getNamespaceURI();
 	
+	/**
+	 * Returns the numerical URI identifier for the given namespace URI. If
+	 * the URI is not registered as a special namespace URI, an exception is
+	 * thrown.
+	 * 
+	 * @throws UnknownResourceException
+	 * @param string $uri
+	 * @return int
+	 */
 	public function getURIIdentifier($uri)
 	{
 		$uri = (string) $uri;

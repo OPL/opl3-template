@@ -31,6 +31,7 @@ class Scannable extends Node implements Countable, IteratorAggregate
 	private $firstChild;
 	private $lastChild;
 	private $size = 0;
+	private $cloneMarker = 1;
 	
 	/**
 	 * Appends a new child to the end of the node children list. If the child
@@ -117,6 +118,7 @@ class Scannable extends Node implements Countable, IteratorAggregate
 		{
 			$this->firstChild = $child;
 		}
+
 		$this->size++;
 		return $this;
 	} // end insertBefore();
@@ -138,7 +140,7 @@ class Scannable extends Node implements Countable, IteratorAggregate
 		{
 			$node = $this->findReferenceNodeByIndex((int) $refNode, 'removeChild');
 		}
-		if($refNode->getParent() !== $this)
+		if($node->getParent() !== $this)
 		{
 			throw new ASTException('Cannot perform removeChild(): the node parent does not match the calling node.');
 		}
@@ -352,6 +354,52 @@ class Scannable extends Node implements Countable, IteratorAggregate
 	{
 		/* null */
 	} // end isChildTypeAllowed();
+	
+	public function __clone()
+	{
+		parent::__clone();
+		
+		if($this->cloneMarker == 1)
+		{
+			$queue = new SplQueue();
+			$item = $this->firstChild;
+			while(null !== $item)
+			{
+				$queue->enqueue(array($this, $item));
+				$item = $item->getNext();
+			}
+			$this->firstChild = null;
+			$this->lastChild = null;
+			$this->size = 0;
+			while($queue->count() > 0)
+			{
+				list($parent, $item) = $queue->dequeue();
+				if($item instanceof Scannable)
+				{
+					$item->cloneMarker = 0;
+					
+					$children = $item->getChildren();					
+					$clonedItem = clone $item;
+					foreach($children as $child)
+					{
+						$queue->enqueue(array($clonedItem, $child));
+					}
+				}
+				else
+				{
+					$clonedItem = clone $item;
+				}
+				$parent->appendChild($clonedItem);
+			}
+		}
+		else
+		{
+			$this->firstChild = null;
+			$this->lastChild = null;
+			$this->size = 0;
+			$this->cloneMarker = 1;
+		}
+	} // end __clone();
 	
 	/**
 	 * Clears all the references between the nodes, so that the tree can

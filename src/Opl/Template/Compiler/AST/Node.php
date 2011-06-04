@@ -64,14 +64,6 @@ abstract class Node
 	
 	public function setPrevious(Node $node = null)
 	{
-		if(null !== $this->previous)
-		{
-			$this->previous->next = null;
-		}
-		if(null !== $node)
-		{
-			$node->next = $this;
-		}
 		$this->previous = $node;
 		return $this;
 	} // end setPrevious();
@@ -83,14 +75,6 @@ abstract class Node
 
 	public function setNext(Node $node = null)
 	{
-		if(null !== $this->previous)
-		{
-			$this->next->previous = null;
-		}
-		if(null !== $node)
-		{
-			$node->previous = $this;
-		}
 		$this->next = $node;
 		return $this;
 	} // end setNext();
@@ -99,6 +83,13 @@ abstract class Node
 	{
 		return $this->next;
 	} // end getNext();
+	
+	public function __clone()
+	{
+		$this->parent = null;
+		$this->previous = null;
+		$this->next = null;
+	} // end __clone();
 	
 	/**
 	 * Unmounts the node from the current parent. Implements

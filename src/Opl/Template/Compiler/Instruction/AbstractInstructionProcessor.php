@@ -10,6 +10,7 @@
  * and other contributors. See website for details.
  */
 namespace Opl\Template\Compiler\Instruction;
+use Opl\Template\Compiler\AST\Node;
 use Opl\Template\Compiler\AST\Scannable;
 use Opl\Template\Compiler\Compiler;
 use SplQueue;
@@ -96,6 +97,23 @@ abstract class AbstractInstructionProcessor
 		}
 		return $this;
 	} // end enqueueChildren();
+	
+	/**
+	 * Allows the instruction processor to put a single child of the given
+	 * scannable into the processing queue.
+	 * 
+	 * @param Node $node The node to enqueue.
+	 * @return AbstractInstructionProcessor Fluent interface.
+	 */
+	public function enqueueChild(Node $node)
+	{
+		if(null === $this->queue)
+		{
+			$this->queue = new SplQueue();
+		}
+		$this->queue->enqueue($node);
+		return $this;
+	} // end enqueueChild();
 	
 	/**
 	 * Returns the queue containing child nodes directed for processing

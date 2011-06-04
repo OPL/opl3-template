@@ -125,7 +125,10 @@ class XmlParser implements ParserInterface
 		libxml_use_internal_errors(true);
 		
 		$reader = new XMLReader;
-		$reader->open($filename);
+		if(!@$reader->open($filename))
+		{
+			throw new ParserException('Cannot open the source file \''.$filename.'\'.');
+		}
 		
 		$root = $current = new Document('xml');
 		$firstElementMatched = false;
@@ -453,6 +456,11 @@ class XmlParser implements ParserInterface
 	protected function processAttributeValue(Element $element, Attribute $attribute, $definition)
 	{
 		$value = $attribute->getValue();
+
+		if(!isset($definition[1]))
+		{
+			throw new CompilerApiException('Invalid definition for \''.$attribute->getFullyQualifiedName().'\' in \''.$element->getFullyQualifiedName().'\'.');
+		}
 		switch($definition[1])
 		{
 			case self::ATTR_EMPTY_ID:

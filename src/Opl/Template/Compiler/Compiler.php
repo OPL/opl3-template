@@ -12,6 +12,7 @@
 namespace Opl\Template\Compiler;
 use Opl\Template\Compiler\Expression\ExpressionInterface;
 use Opl\Template\Compiler\Instruction\AbstractInstructionProcessor;
+use Opl\Template\Compiler\Instruction\InheritanceHookInterface;
 use Opl\Template\Compiler\Linker\LinkerInterface;
 use Opl\Template\Compiler\Parser\ParserInterface;
 use Opl\Template\Compiler\Stage\StageInterface;
@@ -75,6 +76,10 @@ class Compiler
 	 * @var array
 	 */
 	protected $expressionEngines = array();
+	/**
+	 * @var InheritanceHookInterface
+	 */
+	private $inheritanceHook;
 
 	public function setCompiledUnit(CompiledUnit $unit)
 	{
@@ -293,6 +298,31 @@ class Compiler
 	{
 		$this->instructions[] = $instruction;
 	} // end addInstruction();
+	
+	/**
+	 * Sets the hook responsible for handling the template inheritance. The processor
+	 * must implement the <tt>InheritanceHookInterface</tt>.
+	 * 
+	 * @param AbstractInstructionProcessor $processor The processor implementing the required interface.
+	 */
+	public function setInheritanceHook(AbstractInstructionProcessor $processor)
+	{
+		if(!$processor instanceof InheritanceHookInterface)
+		{
+			throw new DomainException('Cannot register the inheritance hook: the processor does not implement the InheritanceHookInterface.');
+		}
+		$this->inheritanceHook = $processor;
+	} // end setInheritanceHook();
+	
+	/**
+	 * Returns the inheritance hook.
+	 * 
+	 * @return AbstractInstructionProcessor
+	 */
+	public function getInheritanceHook()
+	{
+		return $this->inheritanceHook;
+	} // end getInheritanceHook();
 
 	/**
 	 * Compiles the unit template and stores the result into the specified
@@ -321,88 +351,14 @@ class Compiler
 				$instruction->configure();
 			}
 			
-			$finalSnippet = null;
-
-			// The queued templates to be processed.
-			$executionQueue = new SplQueue;
-			$executionQueue->enqueue($sourceName);
-
-			// These templates requested another templates to
-			// be processed first, so they must be reexecuted
-			// later.
-			$restoreStack = new SplStack;
-
-			// The inheritance loop
-			/* Why do we check both the queue and the stack? It is simple. Take a look
-			 * at unit test Load/load_extend.txt. The opt:load may be requested by
-			 * an extending template. The stack processing is launched, when the queue
-			 * becomes empty. However, the last tree on the stack may be opt:extend which
-			 * wants to extend another template. We cannot forbid it do so, so we must
-			 * fill the queue again and the whole process repeats. So we must wait for
-			 * both the stack and the queue to be empty in order to go to the third
-			 * compilation stage.
-			 */
-			while($executionQueue->count() > 0 || $restoreStack->count() > 0)
+			// Launch the compilation
+			if(null === $this->inheritanceHook)
 			{
-				while($executionQueue->count() > 0)
-				{
-					$enqueuedSourceName = $executionQueue->dequeue();
-					if($enqueuedSourceName != $sourceName)
-					{
-						$compiledUnit->addDependency($enqueuedSourceName);
-					}
-					// The file must be parsed
-					$tree = $this->parser->parse(
-						$enqueuedSourceName,
-						file_get_contents($enqueuedSourceName)
-					);
-					// The internal representation must be processeed.
-					foreach($this->stages as $stage)
-					{
-						$tree = $stage->process($tree);
-					}
-					// The template may have requested preprocessing another file first.
-				/*	if(null !== ($templates = $tree->get('preprocess')))
-					{
-						foreach($templates as $preprocessed)
-						{
-							$executionQueue->enqueue($preprocessed);
-						}
-						$restoreStack->push($tree);
-						continue;
-					}
-					else
-					{
-						$this->context->setEscaping(null);
-					}
-				 */
-					list($tree, $finalSnippet) = $this->processPotentialTreeExtending($executionQueue, $tree);
-				}
-				while(($stackSize = $restoreStack->count()) > 0)
-				{
-					$tree = $restoreStack->pop();
-					// Process it once more
-					foreach($this->stages as $stage)
-					{
-						$tree = $stage->process($stage);
-					}
-					$compiledUnit->setEscaping(null);
-
-					if($stackSize > 1)
-					{
-						$tree->dispose();
-						unset($tree);
-					}
-					else
-					{
-						list($tree, $finalSnippet) = $this->processPotentialTreeExtending($executionQueue, $tree);
-					}
-				}
+				$tree = $this->executeSimpleCompilation($sourceName, $compiledName);
 			}
-			// If the snippet was requested, change it into a root node.
-			if(null !== $finalSnippet)
+			else
 			{
-
+				$tree = $this->executeInheritanceCompilation($sourceName, $compiledName, $inflector);
 			}
 
 			// Dependencies must be added to the tree.
@@ -437,7 +393,123 @@ class Compiler
 			throw $exception;
 		}
 	} // end compile();
+	
+	/**
+	 * Executes the simple template compilation, with no compile-time
+	 * including etc. Returns the processed document.
+	 * 
+	 * @param string $sourceName The source name
+	 * @param string $compiledName The compiled name
+	 * @return Document
+	 */
+	protected function executeSimpleCompilation($sourceName, $compiledName)
+	{
+		$tree = $this->parser->parse(
+			$sourceName,
+			file_get_contents($sourceName)
+		);
+		foreach($this->stages as $stage)
+		{
+			$tree = $stage->process($tree);
+		}
+		
+		return $tree;
+	} // end executeSimpleCompilation();
 
+	/**
+	 * This algorithm provides the complex compilation algorithm with support
+	 * for the compile-time template inheritance and inclusion.
+	 * 
+	 * @param string $sourceName
+	 * @param string $compiledName
+	 * @param InflectorInterface $inflector 
+	 */
+	protected function executeComplexCompilation($sourceName, $compiledName, InflectorInterface $inflector)
+	{
+		$finalSnippet = null;
+
+		// The queued templates to be processed.
+		$executionQueue = new SplQueue;
+		$executionQueue->enqueue($sourceName);
+
+		// These templates requested another templates to
+		// be processed first, so they must be reexecuted
+		// later.
+		$restoreStack = new SplStack;
+
+		// The inheritance loop
+		/* Why do we check both the queue and the stack? It is simple. Take a look
+		 * at unit test Load/load_extend.txt. The opt:load may be requested by
+		 * an extending template. The stack processing is launched, when the queue
+		 * becomes empty. However, the last tree on the stack may be opt:extend which
+		 * wants to extend another template. We cannot forbid it do so, so we must
+		 * fill the queue again and the whole process repeats. So we must wait for
+		 * both the stack and the queue to be empty in order to go to the third
+		 * compilation stage.
+		 */
+		while($executionQueue->count() > 0 || $restoreStack->count() > 0)
+		{
+			while($executionQueue->count() > 0)
+			{
+				$enqueuedSourceName = $executionQueue->dequeue();
+				if($enqueuedSourceName != $sourceName)
+				{
+					$compiledUnit->addDependency($enqueuedSourceName);
+				}
+				// The file must be parsed
+				$tree = $this->parser->parse(
+					$enqueuedSourceName,
+					file_get_contents($enqueuedSourceName)
+				);
+				// The internal representation must be processeed.
+				foreach($this->stages as $stage)
+				{
+					$tree = $stage->process($tree);
+				}
+				// The template may have requested preprocessing another file first.
+			/*	if(null !== ($templates = $tree->get('preprocess')))
+				{
+					foreach($templates as $preprocessed)
+					{
+						$executionQueue->enqueue($preprocessed);
+					}
+					$restoreStack->push($tree);
+					continue;
+				}
+				else
+				{
+					$this->context->setEscaping(null);
+				}
+			 */
+				list($tree, $finalSnippet) = $this->processPotentialTreeExtending($executionQueue, $tree);
+			}
+			while(($stackSize = $restoreStack->count()) > 0)
+			{
+				$tree = $restoreStack->pop();
+				// Process it once more
+				foreach($this->stages as $stage)
+				{
+					$tree = $stage->process($stage);
+				}
+				$compiledUnit->setEscaping(null);
+
+				if($stackSize > 1)
+				{
+					$tree->dispose();
+					unset($tree);
+				}
+				else
+				{
+					list($tree, $finalSnippet) = $this->processPotentialTreeExtending($executionQueue, $tree);
+				}
+			}
+		}
+		// If the snippet was requested, change it into a root node.
+		if(null !== $finalSnippet)
+		{
+
+		}
+	} // end executeComplexCompilation();
 
 	protected function processPotentialTreeExtending(SplQueue $executionQueue, $tree)
 	{

@@ -14,10 +14,12 @@ namespace Opl\Template\Compiler;
 // TEMPORARY BELOW!
 use Opl\Template\Compiler\Linker\XmlLinker;
 use Opl\Template\Compiler\Expression\StringExpression;
+use Opl\Template\Compiler\Stage\ManipulationStage;
 use Opl\Template\Compiler\Stage\ProcessingStage;
 use Opl\Template\Compiler\Parser\XmlParser;
 use Opl\Template\Language\Declari\Expression\DeclariExpression;
 use Opl\Template\Language\Declari\Instruction\IfInstruction;
+use Opl\Template\Language\Declari\Instruction\TemplateInstruction;
 
 class CompilerFactory implements CompilerFactoryInterface
 {
@@ -26,6 +28,7 @@ class CompilerFactory implements CompilerFactoryInterface
 		$compiler = new Compiler();
 		$compiler->setParser($parser = new XmlParser());
 		$compiler->setLinker(new XmlLinker());
+		$compiler->addStage('manipulate', new ManipulationStage());
 		$compiler->addStage('process', new ProcessingStage());
 		
 		$parser->setDefaultExpressionType('parse');
@@ -33,8 +36,9 @@ class CompilerFactory implements CompilerFactoryInterface
 		$compiler->addNamespaceURI('http://xml.invenzzia.org/declari');
 		$compiler->addExpressionEngine('parse', new DeclariExpression());
 		$compiler->addExpressionEngine('str', new StringExpression());
+		$compiler->addInstruction(new TemplateInstruction());
 		$compiler->addInstruction(new IfInstruction());
-		
+
 		return $compiler;
 	} // end getCompiler();
 } // end CompilerFactory;

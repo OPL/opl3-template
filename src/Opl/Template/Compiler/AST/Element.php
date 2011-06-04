@@ -10,6 +10,7 @@
  * and other contributors. See website for details.
  */
 namespace Opl\Template\Compiler\AST;
+use SplQueue;
 
 /**
  * Represents a typical element of the HTML language, or the template language.
@@ -192,4 +193,115 @@ class Element extends Scannable implements NamedElementInterface, NamespacedElem
 	{
 		return $this->empty;
 	} // end isEmpty();
+	
+	public function __toString()
+	{
+		return $this->getFullyQualifiedName();
+	} // end __toString();
+	
+	/**
+	 * Returns the list of elements within the given element that match the specified
+	 * name and optionally, the namespace name. The namespace can be either a string,
+	 * an integer (the URI identifier) or <tt>null</tt> (empty namespace). An asterisk
+	 * indicates that we want to match any name.
+	 * 
+	 * @param string|int|null $namespace The matched namespace or namespace URI identifier.
+	 * @param string $name The matched name.
+	 * @param boolean $isRecursive Is the lookup recursive?
+	 */
+	public function getElementsByTagNameNS($namespace, $name, $isRecursive = true)
+	{
+		$queue = new SplQueue();
+		$item = $this->getFirstChild();
+		while(null !== $item)
+		{
+			$queue->enqueue($item);
+			$item = $item->getNext();
+		}
+		$elements = array();
+		
+		while($queue->count() > 0)
+		{
+			$item = $queue->dequeue();
+			if($item instanceof Element)
+			{
+				$ok = true;
+				// Match the namespace
+				if(is_integer($namespace))
+				{
+					if($item->getURIIdentifier() !== $namespace)
+					{
+						$ok = false;
+					}
+				}
+				else
+				{
+					if($item->getNamespace() !== $namespace)
+					{
+						$ok = false;
+					}
+				}
+				if('*' != $name)
+				{
+					if($item->getName() != $name)
+					{
+						$ok = false;
+					}
+				}
+				
+				// If everything matches, put it into the result set.
+				if($ok)
+				{
+					$elements[] = $item;
+				}
+				
+				if($isRecursive)
+				{
+					$subitem = $item->getFirstChild();
+					while(null !== $subitem)
+					{
+						$queue->enqueue($subitem);
+						$subitem = $subitem->getNext();
+					}
+				}
+			}
+		}
+		return $elements;
+	} // end getElementsByTagNameNS();
+	
+	public function getElementsByTagName($name, $isRecursive = true)
+	{
+		$queue = new SplQueue();
+		$item = $this->getFirstChild();
+		while(null !== $item)
+		{
+			$queue->enqueue($item);
+			$item = $item->getNext();
+		}
+		$elements = array();
+		
+		while($queue->count() > 0)
+		{
+			$item = $queue->dequeue();
+			if($item instanceof Element)
+			{			
+				// If everything matches, put it into the result set.
+				if($item->getName() == $name)
+				{
+					$elements[] = $item;
+				}
+				
+				if($isRecursive)
+				{
+					$subitem = $item->getFirstChild();
+					while(null !== $subitem)
+					{
+						$queue->enqueue($subitem);
+						$subitem = $subitem->getNext();
+					}
+				}
+			}
+		}
+		return $elements;
+	} // end getElementsByTagName();
 } // end Element;

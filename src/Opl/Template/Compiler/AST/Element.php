@@ -126,6 +126,17 @@ class Element extends Scannable implements NamedElementInterface, NamespacedElem
 		return $this->attributes[$name];
 	} // end getAttribute();
 	
+	/**
+	 * Returns true, if the attribute with the given name exists.
+	 * 
+	 * @param string $name The attribute name.
+	 * @return boolean
+	 */
+	public function hasAttribute($name)
+	{
+		return isset($this->attributes[(string) $name]);
+	} // end hasAttribute();
+	
 	public function addAttribute(Attribute $attribute)
 	{
 		$name = $attribute->getFullyQualifiedName();

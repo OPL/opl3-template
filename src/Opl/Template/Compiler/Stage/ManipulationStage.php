@@ -184,16 +184,16 @@ class ManipulationStage implements StageInterface
 		{
 			throw new DomainException('Cannot register elements in the processing stage: the processor does not implement the ManipulationStageInterface.');
 		}
-		$uriId = $this->compiler->getURIIdentifier($namespaceURI);
+		$uriId = $this->compiler->getURIIdentifier($namespaceUri);
 		
 		if(!isset($this->registeredAttributes[$uriId]))
 		{
 			$this->registeredAttributes[$uriId] = array();
 		}
-		foreach($elements as $element)
+		foreach($attributes as $attribute)
 		{
-			$element = (string)$element;
-			$this->registeredAttributes[$uriId][$element] = $processor;
+			$attribute = (string)$attribute;
+			$this->registeredAttributes[$uriId][$attribute] = $processor;
 		}
 		return $this;
 	} // end registerAttributes();

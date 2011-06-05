@@ -19,6 +19,7 @@ use Opl\Template\Compiler\Stage\ProcessingStage;
 use Opl\Template\Compiler\Parser\XmlParser;
 use Opl\Template\Language\Declari\Expression\DeclariExpression;
 use Opl\Template\Language\Declari\Instruction\IfInstruction;
+use Opl\Template\Language\Declari\Instruction\MacroInstruction;
 use Opl\Template\Language\Declari\Instruction\TemplateInstruction;
 
 class CompilerFactory implements CompilerFactoryInterface
@@ -37,6 +38,7 @@ class CompilerFactory implements CompilerFactoryInterface
 		$compiler->addExpressionEngine('parse', new DeclariExpression());
 		$compiler->addExpressionEngine('str', new StringExpression());
 		$compiler->addInstruction(new TemplateInstruction());
+		$compiler->addInstruction(new MacroInstruction());
 		$compiler->addInstruction(new IfInstruction());
 
 		return $compiler;

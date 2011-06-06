@@ -22,7 +22,10 @@ namespace Opl\Template;
 interface UnitFactoryInterface
 {
 	/**
+	 * Creates and pre-initializes the new unit for the given template.
 	 * 
+	 * @param string $template The template name
+	 * @return Unit
 	 */
 	public function createUnit($template);
 } // end UnitFactoryInterface;

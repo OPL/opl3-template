@@ -10,6 +10,8 @@
  * and other contributors. See website for details.
  */
 namespace Opl\Template\Compiler;
+use Opl\Template\Compiler\Compiler;
+use Opl\Template\Exception\CompilerApiException;
 
 /**
  * This is the standard implementation of the compiler factory provided

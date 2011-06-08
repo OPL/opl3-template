@@ -20,6 +20,12 @@ namespace Opl\Template\Compiler;
  * to handle the specified language, by setting the parser, linker,
  * required compilation stages and instructions.
  * 
+ * The language classes <strong>should not</strong> depend on any
+ * external resources. They must be initializable in the environment,
+ * where the template compiler is separated from the application.
+ * The standard compiler factory enforces this by initializing these
+ * classes on its own, with an empty constructor call.
+ * 
  * @author Tomasz Jędrzejewski
  * @copyright Invenzzia Group <http://www.invenzzia.org/> and contributors.
  * @license http://www.invenzzia.org/license/new-bsd New BSD License

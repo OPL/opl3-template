@@ -10,6 +10,7 @@
  * and other contributors. See website for details.
  */
 namespace Opl\Template\Language\PHP;
+use Opl\Template\Compiler\AST\Document;
 use Opl\Template\Compiler\Compiler;
 use Opl\Template\Compiler\Parser\ParserInterface;
 use Opl\Template\Language\PHP\AST\Code;
@@ -44,50 +45,62 @@ class PHPParser implements ParserInterface
 	public function parse($filename)
 	{
 		$content = file_get_contents($filename);
-		$length = sizeof($content);
+		$length = strlen($content);
 		
 		$offset = 0;
 		$current = null;
 		$mode = 0;
 		$prependedCode = '';
 		
-		$root = new Document('php');
+		$document = new Document('php');
 		
 		while($offset < $length)
 		{
 			if($mode == 0)
 			{
-				$nextPos = strpos($content, '<?php', $offset);
-				if(false == $nextPos)
+				$testPos1 = strpos($content, '<?php', $offset);
+				$testPos2 = strpos($content, '<?=', $offset);
+				
+				if(false !== $testPos1 && $testPos1 < $testPos2)
 				{
-					$nextPos = strpos($content, '<?=', $offset);
-					if(false !== $nextPos)
-					{
-						$prependedCode = ' echo ';
-					}
-					else
-					{
-						$nextPos = $length;
-					}					
+					$nextPos = $testPos1;
+					$mv = 5;
 				}
-				$node = new Code(Code::PLAIN_TYPE, substr($content, $offset, $nextPos - $offset));
+				else
+				{
+					$nextPos = $testPos2;
+					$mv = 3;
+					$prependedCode = ' echo ';
+				}
+			
+				if(false === $nextPos)
+				{
+					$nextPos = $length;
+					$mv = 0;
+					$prependedCode = '';
+				}
+				$node = new Code(Code::PLAIN_TYPE, $txt = substr($content, $offset, $nextPos - $offset));
 				$mode = 1;
-				$offset = $nextPos;
-
+				$offset = $nextPos + $mv;
 			}
 			else
 			{
 				$nextPos = strpos($content, '?'.'>', $offset);
-				if(false == $nextPos)
+				if(false === $nextPos)
 				{
 					$nextPos = $length;
+					$mv = 0;
 				}
-				$node = new Code(Code::PHP_TYPE, $prependedCode.substr($content, $offset, $nextPos - $offset));
-				$mode = 1;
-				$offset = $nextPos;
+				else
+				{
+					$mv = 2;
+				}
+				$node = new Code(Code::PHP_TYPE, $txt = $prependedCode.substr($content, $offset, $nextPos - $offset));
+				$mode = 0;
+				$offset = $nextPos + $mv;
 				$prependedCode = '';
 			}
-			$root->appendChild($node);
+			$document->appendChild($node);
 		}
 
 		return $document;		

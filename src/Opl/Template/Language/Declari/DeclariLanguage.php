@@ -13,6 +13,7 @@ namespace Opl\Template\Language\Declari;
 use Opl\Template\Compiler\Compiler;
 use Opl\Template\Compiler\Linker\XmlLinker;
 use Opl\Template\Compiler\Expression\StringExpression;
+use Opl\Template\Compiler\LanguageInterface;
 use Opl\Template\Compiler\Stage\ManipulationStage;
 use Opl\Template\Compiler\Stage\ProcessingStage;
 use Opl\Template\Compiler\Parser\XmlParser;

@@ -46,7 +46,7 @@ class ASTIterator implements Iterator
 	 * 
 	 * @param Node $initialNode The initial node.
 	 */
-	public function __construct(Node $initialNode)
+	public function __construct(Node $initialNode = null)
 	{
 		$this->initialNode = $initialNode;
 		$this->current = $initialNode;

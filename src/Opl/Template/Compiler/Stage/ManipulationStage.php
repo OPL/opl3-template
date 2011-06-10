@@ -57,7 +57,7 @@ class ManipulationStage implements StageInterface
 	 */
 	protected $supportedNodes = array(
 		'Opl\Template\Compiler\AST\Element' => 'VisitElement',
-		'Opl\Template\Compiler\AST\Document' => 'VisitDocument'
+		'Opl\Template\Compiler\AST\XmlDocument' => 'VisitDocument'
 	);
 	
 	/**
@@ -118,7 +118,8 @@ class ManipulationStage implements StageInterface
 				list($item, $queue) = $stack->pop();
 				$this->processNode($item, 'post');
 			}
-		}
+		}	
+		
 		return $document;
 	} // end process();
 

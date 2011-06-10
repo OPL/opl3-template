@@ -22,8 +22,8 @@ use InvalidArgumentException;
  */
 class Context
 {
-	protected $data;
-	protected $objects;
+	protected $data = array();
+	protected $objects = array();
 
 	public function setVar($name, $value)
 	{

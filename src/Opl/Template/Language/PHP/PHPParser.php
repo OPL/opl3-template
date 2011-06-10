@@ -42,7 +42,54 @@ class PHPParser implements ParserInterface
 	 */
 	public function parse($filename)
 	{
+		$content = file_get_contents($filename);
+		$length = sizeof($content);
 		
+		$offset = 0;
+		$current = null;
+		$mode = 0;
+		$prependedCode = '';
+		
+		$root = new Document('php');
+		
+		while($offset < $length)
+		{
+			if($mode == 0)
+			{
+				$nextPos = strpos($content, '<?php', $offset);
+				if(false == $nextPos)
+				{
+					$nextPos = strpos($content, '<?=', $offset);
+					if(false !== $nextPos)
+					{
+						$prependedCode = ' echo ';
+					}
+					else
+					{
+						$nextPos = $length;
+					}					
+				}
+				$node = new StaticText(substr($content, $offset, $nextPos - $offset));
+				$mode = 1;
+				$offset = $nextPos;
+
+			}
+			else
+			{
+				$nextPos = strpos($content, '?'.'>', $offset);
+				if(false == $nextPos)
+				{
+					$nextPos = $length;
+				}
+				$node = new Code($prependedCode.substr($content, $offset, $nextPos - $offset));
+				$mode = 1;
+				$offset = $nextPos;
+				$prependedCode = '';
+			}
+			$root->appendChild($node);
+		}
+
+		return $document;		
 	} // end parse();
 	
 	/**

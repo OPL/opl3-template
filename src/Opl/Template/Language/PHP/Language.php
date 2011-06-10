@@ -31,6 +31,12 @@ class Language implements LanguageInterface
 	 */
 	public function initializeLanguage(Compiler $compiler)
 	{
+		if($compiler->getParser() !== null)
+		{
+			throw new LanguageException('Cannot initialize PHP: another template language is selected.');
+		}
 		
+		$compiler->setParser($parser = new PHPParser());
+		$compiler->setLinker(new PHPLinker());
 	} // end initializeLanguage();
 } // end Language;

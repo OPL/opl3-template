@@ -12,6 +12,7 @@
 namespace Opl\Template\Language\PHP;
 use Opl\Template\Compiler\Compiler;
 use Opl\Template\Compiler\Parser\ParserInterface;
+use Opl\Template\Language\PHP\AST\Code;
 
 /**
  * The parser implementation for the PHP template language. It constructs
@@ -69,7 +70,7 @@ class PHPParser implements ParserInterface
 						$nextPos = $length;
 					}					
 				}
-				$node = new StaticText(substr($content, $offset, $nextPos - $offset));
+				$node = new Code(Code::PLAIN_TYPE, substr($content, $offset, $nextPos - $offset));
 				$mode = 1;
 				$offset = $nextPos;
 
@@ -81,7 +82,7 @@ class PHPParser implements ParserInterface
 				{
 					$nextPos = $length;
 				}
-				$node = new Code($prependedCode.substr($content, $offset, $nextPos - $offset));
+				$node = new Code(Code::PHP_TYPE, $prependedCode.substr($content, $offset, $nextPos - $offset));
 				$mode = 1;
 				$offset = $nextPos;
 				$prependedCode = '';

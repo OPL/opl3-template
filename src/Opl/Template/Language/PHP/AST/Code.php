@@ -66,4 +66,9 @@ class Code extends Node
 	{
 		return $this->content;
 	} // end getContent();
+	
+	public function __toString()
+	{
+		return ($this->type == Code::PLAIN_TYPE ? 'plain' : 'php');
+	} // end __toString();
 } // end Code;

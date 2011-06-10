@@ -25,11 +25,6 @@ class Document extends Scannable
 	 * @var string
 	 */
 	private $documentType;
-	/**
-	 * The root element.
-	 * @var Element
-	 */
-	private $rootElement;
 	
 	/**
 	 * Various extra meta-nodes are stored here.
@@ -118,31 +113,8 @@ class Document extends Scannable
 		return isset($this->extraNodes[(string)$name]);
 	} // end hasExtraNode();
 	
-	/**
-	 * Returns the current root element of the document.
-	 * 
-	 * @return Element
-	 */
-	public function getRootElement()
+	public function __toString()
 	{
-		return $this->rootElement;
-	} // end getRootNode();
-	
-	/**
-	 * @see Scannable
-	 */
-	protected function isChildTypeAllowed(Node $node)
-	{
-		if($node instanceof Element)
-		{
-			if(null !== $this->rootElement)
-			{
-				throw new ASTException('Cannot add another root node to the document. The problematic node is: \''.$node->getFullyQualifiedName().'\'.');
-			}
-			else
-			{
-				$this->rootElement = $node;
-			}
-		}
-	} // end isChildTypeAllowed();
+		return $this->documentType;
+	} // end __toString();
 } // end Document;

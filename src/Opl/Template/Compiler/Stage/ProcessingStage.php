@@ -67,7 +67,7 @@ class ProcessingStage implements StageInterface
 		'Opl\Template\Compiler\AST\Text' => 'VisitText',
 		'Opl\Template\Compiler\AST\Cdata' => 'VisitCdata',
 		'Opl\Template\Compiler\AST\Comment' => 'VisitComment',
-		'Opl\Template\Compiler\AST\Document' => 'VisitDocument'
+		'Opl\Template\Compiler\AST\XmlDocument' => 'VisitDocument'
 	);
 	
 	/**

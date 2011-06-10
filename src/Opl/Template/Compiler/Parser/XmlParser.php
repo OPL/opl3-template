@@ -19,6 +19,7 @@ use Opl\Template\Compiler\AST\Expression;
 use Opl\Template\Compiler\AST\Node;
 use Opl\Template\Compiler\AST\Text;
 use Opl\Template\Compiler\AST\Scannable;
+use Opl\Template\Compiler\AST\XmlDocument;
 use Opl\Template\Compiler\Compiler;
 use Opl\Template\Exception\AttributeExtractionException;
 use Opl\Template\Exception\CompilerApiException;
@@ -130,7 +131,7 @@ class XmlParser implements ParserInterface
 			throw new ParserException('Cannot open the source file \''.$filename.'\'.');
 		}
 		
-		$root = $current = new Document('xml');
+		$root = $current = new XmlDocument('xml');
 		$firstElementMatched = false;
 		$depth = 0;
 		
